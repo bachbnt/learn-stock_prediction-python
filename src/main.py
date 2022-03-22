@@ -1,7 +1,7 @@
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, LSTM
 from const import *
 from stock_historical_data import StockHistoricalData
 from stock_information import StockInformation
