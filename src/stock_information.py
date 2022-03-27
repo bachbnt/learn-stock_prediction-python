@@ -17,4 +17,4 @@ class StockInformation:
         self.df = df
 
     def export_file(self):
-        file.export_csv(self.df)
+        file.export_csv(self.df, f'{const.dataPath}{const.symbol}i')

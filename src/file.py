@@ -1,13 +1,10 @@
-import const
+def export_csv(df, file_name):
+    df.to_csv(f'{file_name}.csv', index=False)
 
 
-def export_csv(df):
-    df.to_csv(f'{const.dataPath}{const.symbol}.csv', index=False)
+def export_json(df, file_name):
+    df.to_json(f'{file_name}.json', index=False)
 
 
-def export_json(df):
-    df.to_json(f'{const.dataPath}{const.symbol}.json', index=False)
-
-
-def export_png(plt):
-    plt.savefig(f'{const.chartPath}{const.symbol}.png')
+def export_png(plt, file_name):
+    plt.savefig(f'{file_name}.png')

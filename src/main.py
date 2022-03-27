@@ -17,7 +17,7 @@ si.export_file()
 
 df = shd.df
 
-pre_day: int = 30
+pre_day = 30
 scala_x = MinMaxScaler(feature_range=(0, 1))
 scala_y = MinMaxScaler(feature_range=(0, 1))
 cols_x = [oc_str, hl_str, f'{sma}{ma1}', f'{sma}{ma2}',

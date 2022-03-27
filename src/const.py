@@ -1,7 +1,7 @@
 import datetime as dt
 
 dataPath = 'data/'
-chartPath = 'plot/'
+plotPath = 'plot/'
 vn30Path = 'src/'
 
 start_date = '4/12/2014'
