@@ -58,9 +58,9 @@ model.add(LSTM(units=60, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(LSTM(units=60))
 model.add(Dropout(0.2))
-model.add(Dense(units=len(cols_y)))
+model.add(Dense(units=len(cols_y), activation='relu'))
 
-model.compile(optimizer='adam', loss='mse')
+model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(x_train, y_train, epochs=120,
           steps_per_epoch=40, use_multiprocessing=True)
 # model.save(f'{company}.h5')
