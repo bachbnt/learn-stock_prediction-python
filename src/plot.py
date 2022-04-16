@@ -12,5 +12,5 @@ def draw(real_price, prediction_price, real_color='red', prediction_color='blue'
     plt.ylabel(const.price_str)
     plt.ylim(bottom=0)
     plt.legend()
-    file.export_png(plt, f'{const.plotPath}{const.symbol}.png')
-    plt.show()
+    file.export_png(plt, f'{const.plotPath}{const.symbol}')
+    # plt.show()

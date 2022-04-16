@@ -1,11 +1,11 @@
-from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM
+from keras.models import Sequential
+from sklearn.preprocessing import MinMaxScaler
+import plot
 from const import *
 from stock_historical_data import StockHistoricalData
 from stock_information import StockInformation
-import plot
 
 shd = StockHistoricalData()
 shd.get_data()
