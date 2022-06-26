@@ -18,13 +18,13 @@ class StockHistoricalData:
             stock=self.symbol, country=self.country, from_date=self.start_date, to_date=self.end_date)
         df = pd.DataFrame(shd)
 
-        df[const.oc_str] = df[const.open_str] - df[const.close_str]
-        df[const.hl_str] = df[const.high_str] - df[const.low_str]
-
-        df[f'{const.sma}{const.ma1}'] = df[const.close_str].rolling(window=const.ma1).mean()
-        df[f'{const.sma}{const.ma2}'] = df[const.close_str].rolling(window=const.ma2).mean()
-        df[f'{const.sma}{const.ma3}'] = df[const.close_str].rolling(window=const.ma3).mean()
-        df.dropna(inplace=True)
+        # df[const.oc_str] = df[const.open_str] - df[const.close_str]
+        # df[const.hl_str] = df[const.high_str] - df[const.low_str]
+        #
+        # df[f'{const.sma}{const.ma1}'] = df[const.close_str].rolling(window=const.ma1).mean()
+        # df[f'{const.sma}{const.ma2}'] = df[const.close_str].rolling(window=const.ma2).mean()
+        # df[f'{const.sma}{const.ma3}'] = df[const.close_str].rolling(window=const.ma3).mean()
+        # df.dropna(inplace=False)
 
         self.df = df
 

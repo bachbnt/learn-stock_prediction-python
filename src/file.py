@@ -1,5 +1,5 @@
 def export_csv(df, file_name):
-    df.to_csv(f'{file_name}.csv', index=False)
+    df.to_csv(f'{file_name}.csv')
 
 
 def export_json(df, file_name):

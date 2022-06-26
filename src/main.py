@@ -1,87 +1,86 @@
+import pandas as pd
 import numpy as np
-from keras.layers import Dense, Dropout, LSTM
-from keras.models import Sequential
+
+import matplotlib.pyplot as plt
+
+from matplotlib.pylab import rcParams
+
+rcParams['figure.figsize'] = 20, 10
+
 from sklearn.preprocessing import MinMaxScaler
-import plot
-from const import *
-from stock_historical_data import StockHistoricalData
-from stock_information import StockInformation
+from keras.models import Sequential
+from keras.layers import LSTM, Dropout, Dense
 
-shd = StockHistoricalData()
-shd.get_data()
-shd.export_file()
+scaler = MinMaxScaler(feature_range=(0, 1))
+pd.options.mode.chained_assignment = None
 
-si = StockInformation()
-si.get_data()
-si.export_file()
+df = pd.read_csv("../data/HPG.csv")
+df.head()
 
-df = shd.df
+df["Date"] = pd.to_datetime(df.Date, format="%Y-%m-%d")
+df.index = df['Date']
 
-pre_day = 30
-scala_x = MinMaxScaler(feature_range=(0, 1))
-scala_y = MinMaxScaler(feature_range=(0, 1))
-cols_x = [oc_str, hl_str, f'{sma}{ma1}', f'{sma}{ma2}',
-          f'{sma}{ma3}']
-cols_y = [close_str]
-scaled_data_x = scala_x.fit_transform(
-    df[cols_x].values.reshape(-1, len(cols_x)))
-scaled_data_y = scala_y.fit_transform(
-    df[cols_y].values.reshape(-1, len(cols_y)))
+data = df.sort_index(ascending=True, axis=0)
+new_dataset = pd.DataFrame(index=range(0, len(df)), columns=['Date', 'Close'])
 
-x_total = []
-y_total = []
+for i in range(0, len(data)):
+    new_dataset["Date"][i] = data['Date'][i]
+    new_dataset["Close"][i] = data["Close"][i]
 
-for i in range(pre_day, len(df)):
-    x_total.append(scaled_data_x[i - pre_day:i])
-    y_total.append(scaled_data_y[i])
+new_dataset.index = new_dataset.Date
+new_dataset.drop("Date", axis=1, inplace=True)
 
-test_size = 365
+final_dataset = new_dataset.values
 
-x_train = np.array(x_total[:len(x_total) - test_size])
-x_test = np.array(x_total[len(x_total) - test_size:])
-y_train = np.array(y_total[:len(y_total) - test_size])
-y_test = np.array(y_total[len(y_total) - test_size:])
+train_data = final_dataset[0:987, :]
+valid_data = final_dataset[987:, :]
 
-print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaled_data = scaler.fit_transform(final_dataset)
 
-# Build Model
-model = Sequential()
+x_train_data, y_train_data = [], []
 
-model.add(LSTM(units=60, return_sequences=True,
-               input_shape=(x_train.shape[1], x_train.shape[2])))
-model.add(Dropout(0.2))
-model.add(LSTM(units=60, return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(units=60, return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(units=60, return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(units=60))
-model.add(Dropout(0.2))
-model.add(Dense(units=len(cols_y), activation='relu'))
+for i in range(60, len(train_data)):
+    x_train_data.append(scaled_data[i - 60:i, 0])
+    y_train_data.append(scaled_data[i, 0])
 
-model.compile(optimizer='adam', loss='mean_squared_error')
-model.fit(x_train, y_train, epochs=120,
-          steps_per_epoch=40, use_multiprocessing=True)
-# model.save(f'{company}.h5')
-print('Done Training Model')
+x_train_data, y_train_data = np.array(x_train_data), np.array(y_train_data)
 
-# Testing
-predict_price = model.predict(x_test)
-predict_price = scala_y.inverse_transform(predict_price)
+x_train_data = np.reshape(x_train_data, (x_train_data.shape[0], x_train_data.shape[1], 1))
 
-# Plotting the Stat
-real_price = df[len(df) - test_size:][close_str].values.reshape(-1, 1)
-real_price = np.array(real_price)
-real_price = real_price.reshape(real_price.shape[0], 1)
+lstm_model = Sequential()
+lstm_model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train_data.shape[1], 1)))
+lstm_model.add(LSTM(units=50))
+lstm_model.add(Dense(1))
 
-plot.draw(real_price=real_price, prediction_price=predict_price)
+lstm_model.compile(loss='mean_squared_error', optimizer='adam')
+lstm_model.fit(x_train_data, y_train_data, epochs=1, batch_size=1, verbose=2)
 
-# Make Prediction
-x_predict = df[len(df) - pre_day:][cols_x].values.reshape(-1, len(cols_x))
-x_predict = scala_x.transform(x_predict)
-x_predict = np.array(x_predict)
-x_predict = x_predict.reshape(1, x_predict.shape[0], len(cols_x))
-prediction = model.predict(x_predict)
-prediction = scala_y.inverse_transform(prediction)
-print(prediction)
+
+inputs_data = new_dataset[len(new_dataset) - len(valid_data) - 60:].values
+inputs_data = inputs_data.reshape(-1, 1)
+inputs_data = scaler.transform(inputs_data)
+
+X_test = []
+for i in range(60, inputs_data.shape[0]):
+    X_test.append(inputs_data[i - 60:i, 0])
+X_test = np.array(X_test)
+
+X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+closing_price = lstm_model.predict(X_test)
+closing_price = scaler.inverse_transform(closing_price)
+
+lstm_model.save("saved_lstm_model.h5")
+
+train_data = new_dataset[:987]
+valid_data = new_dataset[987:]
+valid_data['Prediction'] = closing_price
+
+plt.plot(train_data["Close"], label='Train')
+plt.plot(valid_data['Close'], label='Real')
+plt.plot(valid_data['Prediction'], label='Prediction')
+plt.title('FPT')
+plt.xlabel('Time')
+plt.ylabel('Price')
+plt.legend()
+plt.show()
