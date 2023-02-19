@@ -13,22 +13,18 @@ import pandas as pd
 from datetime import datetime as dt
 import math
 
-symbol = 'HPG'
+symbol = 'FPT' # VCB, VIC, HPG, VNM, FPT
 date_milestone = '2021-01-01'
 
-url = f'https://raw.githubusercontent.com/bachbnt/learn-stock_prediction-python/v2/data/{symbol}.csv'
+url = f'https://raw.githubusercontent.com/bachbnt/learn-stock_prediction-python/dev/data/{symbol}.csv'
 dataset_all = pd.read_csv(url)
 dataset_all.head()
 
 dataset_train = dataset_all[dataset_all['Date'] < date_milestone]
 dataset_test = dataset_all[dataset_all['Date'] >= date_milestone]
 
-print(dataset_test.size)
-
 training_set = dataset_train.iloc[:, 1:2].values
 test_set = dataset_test.iloc[:, 1:2].values
-
-# print(training_set)
 
 from sklearn.preprocessing import MinMaxScaler
 sc = MinMaxScaler(feature_range=(0,1))
@@ -68,12 +64,12 @@ model.compile(optimizer='adam',loss='mean_squared_error')
 
 model.fit(X_train,y_train,epochs=100,batch_size=32)
 
-dataset_total = pd.concat((dataset_train['Open'], dataset_test['Open']), axis = 0)
+dataset_total = pd.concat((dataset_train['Close'], dataset_test['Close']), axis = 0)
 inputs = dataset_total[len(dataset_total) - len(dataset_test) - 60:].values
-print(inputs)
+
 inputs = inputs.reshape(-1,1)
 inputs = sc.transform(inputs)
-print(inputs.size)
+
 X_test = []
 for i in range(60, len(inputs)):
     X_test.append(inputs[i-60:i, 0])
@@ -128,6 +124,18 @@ ar = total/(n-1)
 
 # -0.9632876712328429
 print(ar)
+
+# Average Return Taxes Fees - ARTF
+total = 0
+n = len(real_price)
+for i in range(n - 1):
+  if(predicted_price[i+1] > predicted_price[i]):
+    tax_fee = real_price[i]*0.0015 + real_price[i+1]*0.0015 + real_price[i+1]*0.001
+    total += real_price[i+1] - real_price[i] - tax_fee
+artf = total/(n-1)
+
+# -66.13681150684927
+print(artf)
 
 # plt.plot(training_set, label = 'Training Price')
 plt.plot(test_set, label = 'Test Price')
