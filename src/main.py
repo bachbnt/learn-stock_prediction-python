@@ -1,20 +1,25 @@
 import pandas as pd
 import numpy as np
-
+import const
 import matplotlib.pyplot as plt
-
-from matplotlib.pylab import rcParams
-
-rcParams['figure.figsize'] = 20, 10
+from stock_historical_data import StockHistoricalData
+# from matplotlib.pylab import rcParams
+#
+# rcParams['figure.figsize'] = 20, 10
 
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import LSTM, Dropout, Dense
 
+# shd = StockHistoricalData()
+# shd.get_data()
+# shd.export_file()
+
+
 scaler = MinMaxScaler(feature_range=(0, 1))
 pd.options.mode.chained_assignment = None
 
-df = pd.read_csv("../data/HPG.csv")
+df = pd.read_csv(f'../{const.dataPath}{const.symbol}.csv')
 df.head()
 
 df["Date"] = pd.to_datetime(df.Date, format="%Y-%m-%d")
@@ -70,7 +75,7 @@ X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 closing_price = lstm_model.predict(X_test)
 closing_price = scaler.inverse_transform(closing_price)
 
-lstm_model.save("saved_lstm_model.h5")
+# lstm_model.save("saved_lstm_model.h5")
 
 train_data = new_dataset[:987]
 valid_data = new_dataset[987:]
@@ -79,7 +84,7 @@ valid_data['Prediction'] = closing_price
 plt.plot(train_data["Close"], label='Train')
 plt.plot(valid_data['Close'], label='Real')
 plt.plot(valid_data['Prediction'], label='Prediction')
-plt.title('FPT')
+plt.title(f'{const.symbol}')
 plt.xlabel('Time')
 plt.ylabel('Price')
 plt.legend()
